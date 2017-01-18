@@ -270,23 +270,6 @@ def cpu_select_attack_coordinates():
     pass
 
 
-def check_if_attack_hits(grid, coordinates):
-    cell = grid.get_cell(coordinates)
-    if cell.contains_ship_segment:
-        # Hit!
-        ship = cell.get_ship_here()
-
-        return True
-    else:
-        # Miss!
-        return False
-
-
-def check_if_ship_sinks(grid, coordinates):
-    cell = grid.get_cell(coordinates)
-    ship = grid.get_ship_here()
-
-
 def does_cpu_have_ships():
     pass
 
@@ -314,7 +297,18 @@ class GridCell:
     def set_hit_marker(self):
         self.has_hit_marker = True
 
+    def has_ship(self):  # redundant when we could just get .contains_ship?
+        """
+        Returns true if there is a segment of a ship in this cell
+        :rtype: bool
+        """
+        return self.contains_ship_segment
+
     def get_ship_here(self):
+        """
+        Returns the Ship object that crosses this cell
+        :rtype: Ship
+        """
         return self.contains_ship
 
 
@@ -351,6 +345,21 @@ class ShipGrid:
         # Update the Ship object
         ship.position = (x, y)
         ship.horizontal = horizontal
+
+    def check_if_attack_hits(self, x, y):
+        cell = self.get_cell(x, y)
+        if cell.has_ship():
+            # Hit!
+            ship = cell.get_ship_here()
+
+            return True
+        else:
+            # Miss!
+            return False
+
+    def check_if_ship_sinks(self, x, y):
+        cell = self.get_cell(x, y)
+        ship = cell.get_ship_here()
 
 
 # object that stores information about a given ship instance
