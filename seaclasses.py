@@ -91,6 +91,14 @@ class ShipGrid:
         else:
             return False
 
+    def mark_hit(self, x, y):
+        cell = self.get_cell(x, y)
+        cell.has_hit_marker = True
+
+    def mark_miss(self, x, y):
+        cell = self.get_cell(x, y)
+        cell.has_miss_marker = True
+
 
 # object that stores information about a given ship instance
 class Ship:

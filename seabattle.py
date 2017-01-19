@@ -453,11 +453,13 @@ def main():
                 redraw_board(cpu_grid, player_grid)  # updates will appear on tracking grid
                 attack_x, attack_y = player_select_attack_coordinates()
                 if cpu_grid.check_if_attack_hits(attack_x, attack_y):
+                    cpu_grid.mark_hit(attack_x, attack_y)
                     cpu_grid.check_if_ship_sinks(attack_x, attack_y),
                     if not does_cpu_have_ships():
                         winner_declared = True
                         break
                 else:  # attack missed
+                    cpu_grid.mark_miss(attack_x, attack_y)
                     redraw_board(cpu_grid, player_grid)
                     cpu_turn = True
                     break  # end player turn
@@ -466,17 +468,20 @@ def main():
         else:
             while True:  # break when attack misses
                 redraw_board(cpu_grid, player_grid)  # updates will appear on player grid
-                print("Enemy is locking in target coordinates...")
                 attack_x, attack_y = cpu_select_attack_coordinates(player_grid)
+                print("Enemy is attacking " + ROWS[attack_x] + str(attack_y) + "...")
+                # TODO insert a delay
                 if player_grid.check_if_attack_hits(attack_x, attack_y):
                     print("A hit!")
+                    player_grid.mark_hit(attack_x, attack_y)
                     player_grid.check_if_ship_sinks(attack_x, attack_y)
                     if not does_player_have_ships():
                         winner_declared = True
                         break
                 else:  # attack missed
                     print("Enemy missed.")
-                    redraw_board(cpu_grid, player_grid)
+                    player_grid.mark_miss(attack_x, attack_y)
+                    # redraw_board(cpu_grid, player_grid)
                     cpu_turn = False
                     break  # end CPU turn
 
