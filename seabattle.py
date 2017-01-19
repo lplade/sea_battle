@@ -240,8 +240,8 @@ def player_select_attack_coordinates():
             print("Please enter a digit from 0 to 9!")
         else:
             break
-    x_coord = col_attack
-    y_coord = row_letter_to_y_coord_int(row_attack)
+    x_coord = int(col_attack)
+    y_coord = int(row_letter_to_y_coord_int(row_attack))
 
     return x_coord, y_coord
 
