@@ -3,6 +3,8 @@
 # Based on a popular board game
 # TODO implement GUI (PyGame? Turtle graphics?)
 
+import random  # for AI 'decisions'
+
 # We'll use this a bunch
 # name_of_ship: size_of_ship
 SHIP_DICT = {
@@ -42,9 +44,9 @@ def main():
         if not cpu_turn:
             while True:  # break when attack misses, otherwise keep playing
                 redraw_board(cpu_grid, player_grid)  # updates will appear on tracking grid
-                attack_coordinates = player_select_attack_coordinates()
-                if check_if_attack_hits(cpu_grid, attack_coordinates):
-                    check_if_ship_sinks(cpu_grid, attack_coordinates)
+                attack_x, attack_y = player_select_attack_coordinates()
+                if cpu_grid.check_if_attack_hits(attack_x, attack_y):
+                    cpu_grid.check_if_ship_sinks(attack_x, attack_y),
                     if not does_cpu_have_ships():
                         winner_declared = True
                         break
@@ -57,9 +59,9 @@ def main():
         else:
             while True:  # break when attack misses
                 redraw_board(cpu_grid, player_grid)  # updates will appear on player grid
-                attack_coordinates = cpu_select_attack_coordinates()
-                if check_if_attack_hits(player_grid, attack_coordinates):
-                    check_if_ship_sinks(player_grid, attack_coordinates)
+                attack_x, attack_y = cpu_select_attack_coordinates()
+                if player_grid.check_if_attack_hits(attack_x, attack_y):
+                    player_grid.check_if_ship_sinks(attack_x, attack_y)
                     if not does_player_have_ships():
                         winner_declared = True
                         break
@@ -84,6 +86,7 @@ def create_standard_ships():
     return ships
 
 
+# TODO stick this in a general display-related class?
 def redraw_board(enemy_grid, player_grid):
     """
     This refreshes the picture of the board.
@@ -115,7 +118,7 @@ def redraw_board(enemy_grid, player_grid):
             row_string = "  "      # left margin
             row_string += ROWS[y]  # add the index letter
 
-            #step through each column in the row
+            # step through each column in the row
 
             # enemy grid
             for x in range(10):
@@ -162,36 +165,88 @@ def player_interactive_place_ships(ship_list):
     :rtype: ShipGrid
     """
 
+    player_grid = ShipGrid()
+
     # TODO GUI implementation
+
+    print("For each ship, specify the upper or leftmost coordinate.")
 
     for ship in ship_list:
         # TODO Take a single A-1 style entry?
         # loop until we get valid inputs for row and column
         while True:
-            row_attack = input("Which row would you like to attack [A-J]? ")
-            row_attack = row_attack.upper()
-            if not valid_row_input(row_attack):
+            place_row = input("Specify starting row for " + ship.name + " (length: " + ship.size + ") [A-J]: ")
+            place_row = place_row.upper()
+            if not valid_row_input(place_row):
                 print("Please enter a letter from A to J!")
             else:
                 break
         while True:
-            col_attack = input("Which column would you like to attack [0-9]? ")
-            if not valid_column_input(col_attack):
+            place_col = input("Specify starting column for " + ship.name + " (length: " + ship.size + ") [0-9]: ")
+            if not valid_column_input(place_col):
                 print("Please enter a digit from 0 to 9!")
             else:
                 break
-        x_coord = col_attack
-        y_coord = row_letter_to_y_coord_int(row_attack)
+        while True:
+            hor_vert = input("Should ship run Horizontally, or Vertically? [H|V]? ")
+            hor_vert = hor_vert.upper()
+            if hor_vert == "H":
+                horizontal = True
+                break
+            elif hor_vert == "V":
+                horizontal = False
+                break
+            else:
+                print("Please enter H or V!")
+
+        x_coord = place_col
+        y_coord = row_letter_to_y_coord_int(place_row)
+
+        player_grid.place_ship(ship, x_coord, y_coord, horizontal)
+
+    # return the populated grid
+    return player_grid
 
 
 def cpu_place_ships(ship_list):
-    # TODO write this
     """
 
     :type ship_list: list of Ship
     :rtype: ShipGrid
     """
-    pass
+
+    cpu_grid = ShipGrid()
+
+    for ship in ship_list:
+        while True:  # exit when all conditions of a valid ship placement are fulfilled
+            x_attempt = random.randint(0, 9)
+            y_attempt = random.randint(0, 9)
+
+            # http://stackoverflow.com/questions/6824681/get-a-random-boolean-in-python
+            horizontal = random.choice([True], [False])
+
+            # see if this runs off the board
+            if horizontal:
+                rightmost = x_attempt + ship.size - 1
+                if rightmost > 9:
+                    continue  # failed, restart while loop
+            else:  # vertical
+                bottommost = y_attempt + ship.size - 1
+                if bottommost > 9:
+                    continue  # failed, restart while loop
+
+            # scan through planned ship footprint to see if anything is there
+            if horizontal:
+                for i in range(0, ship.size):
+                    # look at this cell, see if the ship flag is set
+                    checking_cell = cpu_grid.get_cell(x_attempt + i, y_attempt)
+                    if checking_cell.has_ship():
+                        continue  # something in the way, start over
+            else:  # vertical
+                for i in range(0, ship.size):
+                    checking_cell = cpu_grid.get_cell(x_attempt, y_attempt + i)
+                    if checking_cell.has_ship():
+                        continue
 
 
 def player_select_attack_coordinates():
@@ -331,7 +386,7 @@ class ShipGrid:
 
     def place_ship(self, ship, x, y, horizontal):
 
-        # TODO tests for legit placement: not running off edge of board, not overlapping existing ship
+        # TODO test for legit placement! not running off edge of board, not overlapping existing ship
 
         # Lay out ship on the board
         for i in range(0, ship.size):
@@ -351,7 +406,6 @@ class ShipGrid:
         if cell.has_ship():
             # Hit!
             ship = cell.get_ship_here()
-
             return True
         else:
             # Miss!
@@ -374,9 +428,19 @@ class Ship:
         # Initialize an array for keeping track of each spot that
         # can be damaged on a ship
         # offset 0 is upper left corner
-        self.damaged = [False] * self.size
+        self.damaged = [False] * self.size  # collection of bools for each segment of the ship
 
     # TODO setters for grid position, orientation
+
+    def damage(self, x, y):
+
+        # figure out offset of selected coordinate from origin coordinate, toggle that bit in the list
+        origin_x, origin_y = self.position
+        if self.horizontal:
+            dam_offset = x - origin_x
+        else:
+            dam_offset = y - origin_y
+        self.damaged[dam_offset] = True
 
 
 # Fires main() loop when this file is executed
