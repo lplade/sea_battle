@@ -4,6 +4,7 @@
 # TODO implement GUI (PyGame? Turtle graphics?)
 
 import random  # for AI 'decisions'
+import time
 
 from seaclasses import *
 
@@ -127,9 +128,26 @@ def player_select_attack_coordinates():
     return x_coord, y_coord
 
 
-def does_player_have_ships():
-    # TODO write this
-    return True
+############
+# Common to player and CPU
+##############
+
+def does_player_have_ships(ship_list):
+    """
+
+    :type ship_list: list of Ship
+    :rtype: bool
+    """
+    # loop over all ships. if any are left, set flag.
+    ships_left = False
+    for ship in ship_list:
+        if not ship.destroyed:
+            ships_left = True
+
+    if ships_left:
+        return True
+    else:
+        return False
 
 
 ########################
@@ -211,10 +229,6 @@ def cpu_select_attack_coordinates(player_grid):
     print("DEBUG: attacking " + str(x_attempt) + ", " + str(y_attempt))
     return x_attempt, y_attempt
 
-
-def does_cpu_have_ships():
-    # TODO write this
-    return True
 
 
 #######################
@@ -453,13 +467,15 @@ def main():
                 redraw_board(cpu_grid, player_grid)  # updates will appear on tracking grid
                 attack_x, attack_y = player_select_attack_coordinates()
                 if cpu_grid.check_if_attack_hits(attack_x, attack_y):
+                    print("A hit!")
                     cpu_grid.mark_hit(attack_x, attack_y)
                     cpu_grid.check_if_ship_sinks(attack_x, attack_y),
-                    if not does_cpu_have_ships():
+                    if not does_player_have_ships(cpu_ships):
                         winner_declared = True
                         break
                 else:  # attack missed
                     cpu_grid.mark_miss(attack_x, attack_y)
+                    print("You missed.")
                     redraw_board(cpu_grid, player_grid)
                     cpu_turn = True
                     break  # end player turn
@@ -470,12 +486,13 @@ def main():
                 redraw_board(cpu_grid, player_grid)  # updates will appear on player grid
                 attack_x, attack_y = cpu_select_attack_coordinates(player_grid)
                 print("Enemy is attacking " + ROWS[attack_x] + str(attack_y) + "...")
-                # TODO insert a delay
+                # small pause so play can see what is going on
+                time.sleep(5)
                 if player_grid.check_if_attack_hits(attack_x, attack_y):
                     print("A hit!")
                     player_grid.mark_hit(attack_x, attack_y)
                     player_grid.check_if_ship_sinks(attack_x, attack_y)
-                    if not does_player_have_ships():
+                    if not does_player_have_ships(player_ships):
                         winner_declared = True
                         break
                 else:  # attack missed
@@ -485,7 +502,11 @@ def main():
                     cpu_turn = False
                     break  # end CPU turn
 
-    # TODO endgame logic
+    # Endgame
+    if cpu_turn:
+        print("Sorry, you lost")
+    else:
+        print("You are the winner")
 
     # Dump a copy of both boards when we're done
     dump_board(cpu_grid, player_grid, "dump.txt")
