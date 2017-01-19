@@ -80,7 +80,16 @@ class ShipGrid:
     def check_if_ship_sinks(self, x, y):
         cell = self.get_cell(x, y)
         ship = cell.get_ship_here()
-        # TODO finish this
+
+        # loop over all segments of ship. A single remaining segment means it's still in play
+        all_destroyed = True
+        for spot in ship.damaged:
+            if spot is False:
+                all_destroyed = False
+        if all_destroyed:
+            return True
+        else:
+            return False
 
 
 # object that stores information about a given ship instance
