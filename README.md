@@ -4,5 +4,4 @@ Sea Battle
 
 Based on a classic board game
 
-Current stumper:
-not drawing shot markers
+Game is still buggy
