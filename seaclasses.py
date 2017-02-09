@@ -85,6 +85,9 @@ class ShipGrid:
         ship.position = (x, y)
         ship.horizontal = horizontal
 
+        # TODO for now, assume valid placement
+        return True
+
     def check_if_attack_hits(self, x, y):
         cell = self.get_cell(x, y)
         if cell.has_ship():
@@ -171,3 +174,31 @@ class Game:
             new_ship = Ship(key, value)
             ships.append(new_ship)
         return ships
+
+    def place_player_ship(self, ship, x_coord, y_coord, horizontal):
+        """
+        Place a ship onto the player grid.
+        Return false if there is a problem.
+        :param ship:
+        :param x_coord:
+        :param y_coord:
+        :param horizontal:
+        :return:
+        """
+        return self.player_grid.place_ship(ship, x_coord, y_coord, horizontal)
+
+    def place_cpu_ship(self, ship, x_coord, y_coord, horizontal):
+        """
+        Place a ship onto the cpu grid.
+        Return false if there is a problem.
+        :param ship:
+        :param x_coord:
+        :param y_coord:
+        :param horizontal:
+        :return:
+        """
+        return self.cpu_grid.place_ship(ship, x_coord, y_coord, horizontal)
+
+
+
+
