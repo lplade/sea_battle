@@ -26,17 +26,7 @@ SHIP_DICT = {
 ROWS = "ABCDEFGHIJ"
 
 
-def create_standard_ships():
-    """
-    Initializes the standard list of ships
-    :rtype: list of Ship
-    """
-    ships = []
-    # loop through ship dictionary and create Ship objects
-    for key, value in SHIP_DICT.items():
-        new_ship = Ship(key, value)
-        ships.append(new_ship)
-    return ships
+
 
 
 #############################
@@ -228,7 +218,6 @@ def cpu_select_attack_coordinates(player_grid):
 
     print("DEBUG: attacking " + str(x_attempt) + ", " + str(y_attempt))
     return x_attempt, y_attempt
-
 
 
 #######################
@@ -436,6 +425,49 @@ def dump_board(enemy_grid, player_grid, filename):
         print("Trouble dumping grids to " + filename + "!")
 
 
+def run_human_turn(gs):
+    while True:
+        redraw_board(gs.cpu_grid, gs.player_grid)
+        # updates will appear on tracking grid
+        attack_x, attack_y = player_select_attack_coordinates()
+        if gs.cpu_grid.check_if_attack_hits(attack_x, attack_y):
+            print("A hit!")
+            gs.cpu_grid.mark_hit(attack_x, attack_y)
+            gs.cpu_grid.check_if_ship_sinks(attack_x, attack_y),
+            if not does_player_have_ships(gs.cpu_ships):
+                gs.winner_declared = True
+                return
+        else:  # attack missed
+            gs.cpu_grid.mark_miss(attack_x, attack_y)
+            print("You missed.")
+            redraw_board(gs.cpu_grid, gs.player_grid)
+            gs.cpu_turn = True
+            return
+
+
+def run_cpu_turn(gs):
+    while True:  # return when attack misses
+        redraw_board(gs.cpu_grid,
+                     gs.player_grid)  # updates will appear on player grid
+        attack_x, attack_y = cpu_select_attack_coordinates(gs.player_grid)
+        print("Enemy is attacking " + ROWS[attack_x] + str(attack_y) + "...")
+        # small pause so play can see what is going on
+        time.sleep(5)
+        if gs.player_grid.check_if_attack_hits(attack_x, attack_y):
+            print("A hit!")
+            gs.player_grid.mark_hit(attack_x, attack_y)
+            gs.player_grid.check_if_ship_sinks(attack_x, attack_y)
+            if not does_player_have_ships(gs.player_ships):
+                gs.winner_declared = True
+                return
+        else:  # attack missed
+            print("Enemy missed.")
+            gs.player_grid.mark_miss(attack_x, attack_y)
+            # redraw_board(cpu_grid, player_grid)
+            gs.cpu_turn = False
+            return  # end CPU turn
+
+
 ######################
 # MAIN PROGRAM LOGIC #
 ######################
@@ -447,69 +479,31 @@ def main():
 
     # initialize some stuff:
 
-    # give both the player and the CPU the starting ships
-    player_ships = create_standard_ships()
-    cpu_ships = create_standard_ships()
+    gs = Game()  # game state
 
-    player_grid = player_interactive_place_ships(player_ships)
-    cpu_grid = cpu_place_ships(cpu_ships)
-
-    # attack_coordinates = (-1, -1)
-
-    winner_declared = False
-    cpu_turn = False
+    gs.player_grid = \
+        player_interactive_place_ships(gs.player_ships)
+    gs.cpu_grid = cpu_place_ships(gs.cpu_ships)
 
     # Game loop
-    while winner_declared is False:
+    while gs.winner_declared is False:
+
         # Player turn loop
-        if not cpu_turn:
-            while True:  # break when attack misses, otherwise keep playing
-                redraw_board(cpu_grid, player_grid)  # updates will appear on tracking grid
-                attack_x, attack_y = player_select_attack_coordinates()
-                if cpu_grid.check_if_attack_hits(attack_x, attack_y):
-                    print("A hit!")
-                    cpu_grid.mark_hit(attack_x, attack_y)
-                    cpu_grid.check_if_ship_sinks(attack_x, attack_y),
-                    if not does_player_have_ships(cpu_ships):
-                        winner_declared = True
-                        break
-                else:  # attack missed
-                    cpu_grid.mark_miss(attack_x, attack_y)
-                    print("You missed.")
-                    redraw_board(cpu_grid, player_grid)
-                    cpu_turn = True
-                    break  # end player turn
+        if not gs.cpu_turn:
+            run_human_turn(gs)
 
         # CPU turn loop
         else:
-            while True:  # break when attack misses
-                redraw_board(cpu_grid, player_grid)  # updates will appear on player grid
-                attack_x, attack_y = cpu_select_attack_coordinates(player_grid)
-                print("Enemy is attacking " + ROWS[attack_x] + str(attack_y) + "...")
-                # small pause so play can see what is going on
-                time.sleep(5)
-                if player_grid.check_if_attack_hits(attack_x, attack_y):
-                    print("A hit!")
-                    player_grid.mark_hit(attack_x, attack_y)
-                    player_grid.check_if_ship_sinks(attack_x, attack_y)
-                    if not does_player_have_ships(player_ships):
-                        winner_declared = True
-                        break
-                else:  # attack missed
-                    print("Enemy missed.")
-                    player_grid.mark_miss(attack_x, attack_y)
-                    # redraw_board(cpu_grid, player_grid)
-                    cpu_turn = False
-                    break  # end CPU turn
+            run_cpu_turn(gs)
 
     # Endgame
-    if cpu_turn:
+    if gs.cpu_turn:
         print("Sorry, you lost")
     else:
         print("You are the winner")
 
     # Dump a copy of both boards when we're done
-    dump_board(cpu_grid, player_grid, "dump.txt")
+    dump_board(gs.cpu_grid, gs.player_grid, "dump.txt")
 
 
 #######################

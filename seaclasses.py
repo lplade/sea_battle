@@ -1,3 +1,21 @@
+#################
+# 'constants'   #
+#################
+
+# We'll use this a bunch
+# name_of_ship: size_of_ship
+SHIP_DICT = {
+    'aircraft carrier': 5,
+    'battleship': 4,
+    'cruiser': 3,
+    'submarine': 3,
+    'destroyer': 2
+}
+
+# list of row labels
+ROWS = "ABCDEFGHIJ"
+
+
 class GridCell:
     def __init__(self):
         self.contains_ship_segment = False  # boolean whether or not a ship is here
@@ -125,3 +143,31 @@ class Ship:
         else:
             dam_offset = y - origin_y
         self.damaged[dam_offset] = True
+
+
+# object that stores game state
+class Game:
+    def __init__(self):
+        # Give player and cpu their standard chips
+        self.player_ships = self.create_standard_ships()
+        self.cpu_ships = self.create_standard_ships()
+
+        # Let main program populate these
+        self.player_grid = None
+        self.cpu_grid = None
+
+        self.winner_declared = False
+        self.cpu_turn = False
+
+    @staticmethod
+    def create_standard_ships():
+        """
+        Initializes the standard list of ships
+        :rtype: list of Ship
+        """
+        ships = []
+        # loop through ship dictionary and create Ship objects
+        for key, value in SHIP_DICT.items():
+            new_ship = Ship(key, value)
+            ships.append(new_ship)
+        return ships
