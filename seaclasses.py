@@ -2,6 +2,8 @@
 # 'constants'   #
 #################
 
+import logging
+
 # We'll use this a bunch
 # name_of_ship: size_of_ship
 SHIP_DICT = {
@@ -62,17 +64,45 @@ class ShipGrid:
         return cell
 
     def place_ship(self, ship, x, y, horizontal):
-
-        # TODO test for legit placement! not running off edge of board, not overlapping existing ship
-
-        # Lay out ship on the board
         """
+        Lay out ship on the board.
+        Return false if placement is invalid
 
         :param ship: Ship
         :param x: int
         :param y: int
         :param horizontal: bool
         """
+
+        # see if this runs off the board
+        if horizontal:
+            rightmost = x + ship.size - 1
+            if rightmost > 9:
+                logging.debug("Hit edge!")
+                return False
+        else:  # vertical
+            bottommost = y + ship.size - 1
+            if bottommost > 9:
+                logging.debug("Hit edge!")
+                return False
+
+        # scan through planned ship footprint to see if anything is there
+        if horizontal:
+            for i in range(0, ship.size):
+                # look at this cell, see if the ship flag is set
+                checking_cell = self.get_cell(x + i, y)
+                if checking_cell.has_ship():
+                    logging.debug("Another ship is there!")
+                    return False
+        else:  # vertical
+            for i in range(0, ship.size):
+                checking_cell = self.get_cell(x, y + i)
+                if checking_cell.has_ship():
+                    logging.debug("Another ship is there!")
+                    return False
+
+        # We should be in the clear at this point. Update the data.
+
         for i in range(0, ship.size):
             if horizontal:
                 cell = self.get_cell(x + i, y)
@@ -85,17 +115,16 @@ class ShipGrid:
         ship.position = (x, y)
         ship.horizontal = horizontal
 
-        # TODO for now, assume valid placement
         return True
 
     def check_if_attack_hits(self, x, y):
         cell = self.get_cell(x, y)
         if cell.has_ship():
-            # Hit!
-            ship = cell.get_ship_here()
+            logging.info("Hit!")
+            ship = cell.get_ship_here()  # Why this?
             return True
         else:
-            # Miss!
+            logging.info("Miss!")
             return False
 
     def check_if_ship_sinks(self, x, y):

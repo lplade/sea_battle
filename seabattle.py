@@ -5,8 +5,10 @@
 
 import random  # for AI 'decisions'
 import time
+import logging
 
 import player_io
+import cpu_logic
 from seaclasses import *
 
 
@@ -50,7 +52,8 @@ def player_place_ships(ship_list):
         while True:  # break on valid placement
             redraw_board(enemy_grid, player_grid)
 
-            x_coord, y_coord, horizontal = player_io.interactive_get_placement_coord(ship)
+            x_coord, y_coord, horizontal = \
+                player_io.interactive_get_placement_coord(ship)
 
             if player_grid.place_ship(ship, x_coord, y_coord, horizontal):
                 player_io.msg("Ship placed.")
@@ -103,52 +106,21 @@ def cpu_place_ships(ship_list):
     :type ship_list: list of Ship
     :rtype: ShipGrid
     """
-
     cpu_grid = ShipGrid()
-
-    # TODO pull this testing stuff into a separate function, then include in player version
 
     for ship in ship_list:
         while True:  # exit when all conditions of a valid ship placement are fulfilled
-            x_attempt = random.randint(0, 9)
-            y_attempt = random.randint(0, 9)
 
-            # http://stackoverflow.com/questions/6824681/get-a-random-boolean-in-python
-            horizontal = random.choice([True, False])
+            x_attempt, y_attempt, horizontal = cpu_logic.random_placement_coord(ship)
 
-            # print("DEBUG: trying to put ship size " + str(ship.size) + " at " + str(x_attempt) + ", " + str(y_attempt))
+            logging.info("Trying to put ship size {} at {}, {}, {}".format(ship.size, x_attempt, y_attempt, horizontal))
 
-            # see if this runs off the board
-            if horizontal:
-                rightmost = x_attempt + ship.size - 1
-                if rightmost > 9:
-                    # print("DEBUG: hit edge!")
-                    continue  # failed, restart while loop
-            else:  # vertical
-                bottommost = y_attempt + ship.size - 1
-                if bottommost > 9:
-                    # print("DEBUG: hit edge!")
-                    continue  # failed, restart while loop
-
-            # scan through planned ship footprint to see if anything is there
-            if horizontal:
-                for i in range(0, ship.size):
-                    # look at this cell, see if the ship flag is set
-                    checking_cell = cpu_grid.get_cell(x_attempt + i, y_attempt)
-                    if checking_cell.has_ship():
-                        # print("DEBUG: another ship is there!")
-                        continue  # something in the way, start over
-            else:  # vertical
-                for i in range(0, ship.size):
-                    checking_cell = cpu_grid.get_cell(x_attempt, y_attempt + i)
-                    if checking_cell.has_ship():
-                        # print("DEBUG: another ship is there!")
-                        continue
-
-            cpu_grid.place_ship(ship, x_attempt, y_attempt, horizontal)
-
-            print("Enemy has deployed a ship...")
-            break
+            # Use ShipGrid.place_ship logic to do the heavy lifting here
+            if cpu_grid.place_ship(ship, x_attempt, y_attempt, horizontal):
+                player_io.msg("Enemy has deployed a ship...")
+                break
+            else:
+                logging.debug("Invalid placement, re-trying...")
 
     return cpu_grid
 
@@ -168,9 +140,8 @@ def cpu_select_attack_coordinates(player_grid):
         if not cell.has_miss_marker and not cell.has_hit_marker:
             break  # otherwise, keep picking random cells
 
-    print("DEBUG: attacking " + str(x_attempt) + ", " + str(y_attempt))
+    logging.debug("attacking " + str(x_attempt) + ", " + str(y_attempt))
     return x_attempt, y_attempt
-
 
 
 #####################

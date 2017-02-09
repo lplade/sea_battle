@@ -73,6 +73,7 @@ def interactive_get_attack_coord():
 
     return x_coord, y_coord
 
+
 # HELPER FUNCTIONS #
 
 def valid_row_input(row):
