@@ -112,7 +112,7 @@ class ShipGrid:
             cell.contains_ship = ship
 
         # Update the Ship object
-        ship.position = (x, y)
+        ship.position = [x, y]
         ship.horizontal = horizontal
 
         return True
@@ -121,7 +121,8 @@ class ShipGrid:
         cell = self.get_cell(x, y)
         if cell.has_ship():
             logging.info("Hit!")
-            ship = cell.get_ship_here()  # Why this?
+            ship = cell.get_ship_here()
+            ship.damage(x, y)
             return True
         else:
             logging.info("Miss!")
@@ -131,14 +132,21 @@ class ShipGrid:
         cell = self.get_cell(x, y)
         ship = cell.get_ship_here()
 
-        # loop over all segments of ship. A single remaining segment means it's still in play
+        logging.debug("Checking if {} sinks".format(ship.name))
+
+        # loop over all segments of ship.
+        # A single remaining segment means it's still in play
         all_destroyed = True
+        ok_spaces = 0
         for spot in ship.damaged:
             if spot is False:
+                ok_spaces += 1
                 all_destroyed = False
         if all_destroyed:
+            logging.info("Sank that ship")
             return True
         else:
+            logging.debug("{} remaining spot".format(ok_spaces))
             return False
 
     def mark_hit(self, x, y):
@@ -157,7 +165,7 @@ class Ship:
         self.size = size
         self.horizontal = True  # vertical = False
         # position is where cell 0 of the ship sits
-        self.position = (-1, -1)  # -1 = not on board
+        self.position = [-1, -1]  # -1 = not on board
         self.destroyed = False
         # Initialize an array for keeping track of each spot that
         # can be damaged on a ship
@@ -167,8 +175,10 @@ class Ship:
     # TODO setters for grid position, orientation
 
     def damage(self, x, y):
-
-        # figure out offset of selected coordinate from origin coordinate, toggle that bit in the list
+        """
+        figure out offset of selected coordinate
+        from origin coordinate, toggle that bit in the list
+        """
         origin_x, origin_y = self.position
         if self.horizontal:
             dam_offset = x - origin_x
