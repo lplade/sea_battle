@@ -114,3 +114,7 @@ def row_letter_to_y_coord_int(row_letter):
     y_coord = row_dict[row_letter]
     assert 0 <= y_coord <= 9
     return y_coord
+
+
+def anykey():
+    input("- Press any key to continue. -")

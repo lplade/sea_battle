@@ -174,7 +174,7 @@ def run_cpu_turn(gs):
         attack_x, attack_y = cpu_select_attack_coordinates(gs.player_grid)
         print("Enemy is attacking " + ROWS[attack_x] + str(attack_y) + "...")
         # small pause so play can see what is going on
-        time.sleep(5)
+        time.sleep(4)
         if gs.player_grid.check_if_attack_hits(attack_x, attack_y):
             print("A hit!")
             gs.player_grid.mark_hit(attack_x, attack_y)
@@ -216,10 +216,11 @@ def main():
         # Player turn loop
         if not gs.cpu_turn:
             run_human_turn(gs)
-
+            player_io.anykey()
         # CPU turn loop
         else:
             run_cpu_turn(gs)
+            player_io.anykey()
 
     # Endgame
     if gs.cpu_turn:
