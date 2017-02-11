@@ -4,7 +4,7 @@ from constants import *
 
 class GridCell:
     def __init__(self):
-        self.contains_ship_segment = False  # boolean whether or not a ship is here
+        self.contains_ship_segment = False  # whether or not a ship is here
         self.contains_ship = None  # Ship object
         self.has_miss_marker = False  # like the white peg
         self.has_hit_marker = False  # like the red peg
@@ -154,7 +154,8 @@ class Ship:
         # Initialize an array for keeping track of each spot that
         # can be damaged on a ship
         # offset 0 is upper left corner
-        self.damaged = [False] * self.size  # collection of bools for each segment of the ship
+        self.damaged = [False] * self.size  # list of bools for each
+        #                                     segment of the ship
 
     # TODO setters for grid position, orientation
 
@@ -166,6 +167,10 @@ class Ship:
         :param y:
         :return: True if succeeds, False if error
         """
+        # We should always have determined this ship has a segment at these
+        # coordinates before calling this, so we should never encounter
+        # the warning or return False
+
         origin_x, origin_y = self.position
         if self.horizontal:
             if y != origin_y:

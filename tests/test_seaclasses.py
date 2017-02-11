@@ -36,14 +36,33 @@ class ShipTest(unittest.TestCase):
 
 class ShipGridTest(unittest.TestCase):
 
-    def setUp(self):
-        """Set up the tests"""
-        print("ShipGridTest:setUp_:begin")
-        # do stuff
-        print("ShipGridTest:setUp_:end")
+    def test_place_ship(self):
 
-    def tearDown(self):
-        """Clean up after the test"""
-        print("ShipGridTest:tearDown_:begin")
-        # do stuff
-        print("ShipGridTest:tearDown_:end")
+        test_ship1 = seaclasses.Ship("tugboat", 2)
+        test_ship2 = seaclasses.Ship("dreadnaught", 6)
+        test_grid = seaclasses.ShipGrid()
+
+        # outside of grid - fails in get_cell()
+        # self.assertFalse(
+        #     test_grid.place_ship(test_ship1, -3, -18, True))
+        # self.assertFalse(
+        #     test_grid.place_ship(test_ship2, 9, 12, False))
+
+        # runs off edge
+        self.assertFalse(
+            test_grid.place_ship(test_ship2, 9, 9, True))
+
+        # hits another ship
+        self.assertTrue(
+            test_grid.place_ship(test_ship1, 0, 0, True)
+        )
+        self.assertFalse(
+            test_grid.place_ship(test_ship2, 0, 0, False)
+        )
+
+        # right up against right edge
+        self.assertTrue(
+            test_grid.place_ship(test_ship2, 9, 3, False)
+        )
+
+
