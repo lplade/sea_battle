@@ -1,8 +1,5 @@
 import logging
-
-# list of row labels
-ROWS = "ABCDEFGHIJ"
-
+from constants import *
 
 def dump_board(enemy_grid, player_grid, filename):
 

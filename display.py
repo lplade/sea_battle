@@ -1,11 +1,7 @@
 
 from seaclasses import *
 import logging
-
-
-# list of row labels
-ROWS = "ABCDEFGHIJ"
-
+from constants import *
 
 def redraw_board(enemy_grid, player_grid):
     """

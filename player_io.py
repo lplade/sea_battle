@@ -1,5 +1,4 @@
-# list of row labels
-ROWS = "ABCDEFGHIJ"
+from constants import *
 
 
 def msg(string):
