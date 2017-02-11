@@ -54,15 +54,50 @@ class ShipGridTest(unittest.TestCase):
 
         # hits another ship
         self.assertTrue(
-            test_grid.place_ship(test_ship1, 0, 0, True)
-        )
+            test_grid.place_ship(test_ship1, 0, 0, True))
         self.assertFalse(
-            test_grid.place_ship(test_ship2, 0, 0, False)
-        )
+            test_grid.place_ship(test_ship2, 0, 0, False))
 
         # right up against right edge
         self.assertTrue(
-            test_grid.place_ship(test_ship2, 9, 3, False)
+            test_grid.place_ship(test_ship2, 9, 3, False))
+
+    def test_check_if_attack_hits(self):
+
+        test_ship = seaclasses.Ship("tugboat", 2)
+        test_grid = seaclasses.ShipGrid()
+        test_grid.place_ship(test_ship, 0, 0, True)
+
+        self.assertTrue(
+            test_grid.check_if_attack_hits(0, 0)
         )
 
+        self.assertTrue(
+            test_grid.check_if_attack_hits(1, 0)
+        )
 
+        self.assertFalse(
+            test_grid.check_if_attack_hits(0, 1)
+        )
+
+        self.assertFalse(
+            test_grid.check_if_attack_hits(2, 0)
+        )
+
+    def test_check_if_ship_sinks(self):
+
+        test_ship = seaclasses.Ship("tugboat", 2)
+        test_grid = seaclasses.ShipGrid()
+        test_grid.place_ship(test_ship, 0, 0, True)
+
+        test_grid.check_if_attack_hits(0, 0)
+        self.assertFalse(
+            test_grid.check_if_ship_sinks(0, 0)
+        )
+
+        test_grid.check_if_attack_hits(1, 0)
+        self.assertTrue(
+            test_grid.check_if_ship_sinks(1, 0)
+        )
+
+    # test mark_hit and mark_miss in display
