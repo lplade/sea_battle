@@ -16,7 +16,7 @@ from constants import *
 
 def player_place_ships(ship_list):
     """
-
+    Interactively prompts player to place each ship in ship_list
     :type ship_list: list of Ship
     :rtype: ShipGrid
     """
@@ -49,13 +49,19 @@ def player_place_ships(ship_list):
 
 def player_select_attack_coordinates():
     """
-
+    Interactively prompts player to input attack coordinates.
+    Right now, just wraps player_io.interactive_get_attack_coord()
     :rtype: int, int
     """
     return player_io.interactive_get_attack_coord()
 
 
 def run_human_turn(gs):
+    """
+    Main logic for the human player's turn
+    :param gs:
+    :return:
+    """
 
     message = None
 
@@ -92,7 +98,7 @@ def run_human_turn(gs):
 
 def does_player_have_ships(ship_list):
     """
-
+    Checks if there are any un-sunk ships left in ship_list.
     :type ship_list: list of Ship
     :rtype: bool
     """
@@ -114,7 +120,8 @@ def does_player_have_ships(ship_list):
 
 def cpu_place_ships(ship_list):
     """
-
+    AI to place CPU ship on board.
+    Right now, completely random. No strategy.
     :type ship_list: list of Ship
     :rtype: ShipGrid
     """
@@ -142,7 +149,8 @@ def cpu_place_ships(ship_list):
 
 def cpu_select_attack_coordinates(player_grid):
     """
-
+    AI to select CPU attack coordinates.
+    Right now, completely random. No strategy.
     :param player_grid: ShipGrid
     :rtype: int, int
     """
@@ -154,6 +162,11 @@ def cpu_select_attack_coordinates(player_grid):
 
 
 def run_cpu_turn(gs):
+    """
+    Main logic for computer player turn.
+    :param gs:
+    :return:
+    """
     message = None
     while True:  # return when attack misses
         display.redraw_board(gs.cpu_grid, gs.player_grid, message)
