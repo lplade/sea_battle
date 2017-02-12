@@ -1,4 +1,5 @@
 import logging
+import player_io
 from constants import *
 
 # define chr for display elements
@@ -12,6 +13,10 @@ class CharGrid:
 
     def __init__(self, ship_grid, hidden=False):
         # use "nested comprehension" to set up 10x10 "array" of '.'
+        """
+
+        :type ship_grid: seaclasses.ShipGrid
+        """
         self.array = [[BLANK for y in range(10)] for x in range(10)]
         self.hidden = hidden  # hides ship positions from player
         self.set_state(ship_grid)
@@ -39,15 +44,19 @@ class CharGrid:
     def set_state(self, ship_grid):
         # check grid from upper left to lower right,
         # update chr in each array position
+        """
+
+        :type ship_grid: seaclasses.ShipGrid
+        """
         for y in range(10):
             for x in range(10):
                 cell = ship_grid.get_cell(x, y)
-                if cell.contains_ship_segment():
-                    if cell.has_hit_marker():
+                if cell.contains_ship_segment:
+                    if cell.has_hit_marker:
                         self.set_hit(x, y)
                     else:
                         self.set_ship(x, y)
-                elif cell.has_miss_marker():
+                elif cell.has_miss_marker:
                     self.set_miss(x, y)
                 else:
                     self.set_empty(x, y)
@@ -117,7 +126,8 @@ def redraw_board(enemy_grid, player_grid, last_msg=None):
     # print footer rows
     print(x_pos_row)
     print()
-    print(last_msg)  # since we just cleared the screen
+    if last_msg:
+        player_io.msg(last_msg)  # since we just cleared the screen
     print()
 
 

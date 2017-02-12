@@ -3,10 +3,11 @@
 # Based on a popular board game
 # TODO implement GUI (PyGame? Turtle graphics?)
 
-import random  # for AI 'decisions'
+
+# PROTIP: if displaying A1 coordinates, letter is Y coord, number is X!
+
 import time
 import logging
-
 
 import player_io
 import cpu_logic
@@ -32,20 +33,22 @@ def player_place_ships(ship_list):
     # we have to initialize a null grid for drawing purposes.
     # this gets discarded.
 
-    player_io.msg("For each ship, specify the upper or leftmost coordinate.")
+    message = "For each ship, specify the upper or leftmost coordinate."
 
     for ship in ship_list:
         while True:  # break on valid placement
-            display.redraw_board(enemy_grid=enemy_grid, player_grid=player_grid)
+            display.redraw_board(enemy_grid=enemy_grid,
+                                 player_grid=player_grid,
+                                 last_msg=message)
 
             x_coord, y_coord, horizontal = \
                 player_io.interactive_get_placement_coord(ship)
 
             if player_grid.place_ship(ship, x_coord, y_coord, horizontal):
-                player_io.msg("Ship placed.")
+                message = "Ship placed."
                 break
             else:
-                player_io.msg("Invalid placement! Try again.")
+                message = "Invalid placement! Try again."
 
     # return the populated grid
     return player_grid
@@ -57,6 +60,37 @@ def player_select_attack_coordinates():
     :rtype: int, int
     """
     return player_io.interactive_get_attack_coord()
+
+
+def run_human_turn(gs):
+
+    message = None
+
+    while True:
+        display.redraw_board(enemy_grid=gs.cpu_grid,
+                             player_grid=gs.player_grid,
+                             last_msg=message)
+        # updates will appear on tracking grid
+        attack_x, attack_y = player_select_attack_coordinates()
+        if gs.cpu_grid.check_if_attack_hits(attack_x, attack_y):
+            message = "A hit!"
+            gs.cpu_grid.mark_hit(attack_x, attack_y)
+            if gs.cpu_grid.check_if_ship_sinks(attack_x, attack_y):
+                sunk_ship = \
+                    gs.cpu_grid.get_cell(attack_x, attack_y).get_ship_here()
+                if sunk_ship.name[0].lower() in "aeiou":
+                    message = "You sank an {}!a".format(sunk_ship.name)
+                else:
+                    message = "You sank a {}!".format(sunk_ship.name)
+            if not does_player_have_ships(gs.cpu_ships):
+                gs.winner_declared = True
+                return
+        else:  # attack missed
+            gs.cpu_grid.mark_miss(attack_x, attack_y)
+            message = "You missed."
+            display.redraw_board(gs.cpu_grid, gs.player_grid, message)
+            gs.cpu_turn = True
+            return
 
 
 ############
@@ -84,7 +118,6 @@ def does_player_have_ships(ship_list):
 ########################
 # CPU functions        #
 ########################
-# TODO re-write so these are all instance methods of a CPU class
 
 def cpu_place_ships(ship_list):
     """
@@ -127,49 +160,28 @@ def cpu_select_attack_coordinates(player_grid):
     return x_attack, y_attack
 
 
-def run_human_turn(gs):
-    while True:
-        display.redraw_board(enemy_grid=gs.cpu_grid, player_grid=gs.player_grid)
-        # updates will appear on tracking grid
-        attack_x, attack_y = player_select_attack_coordinates()
-        if gs.cpu_grid.check_if_attack_hits(attack_x, attack_y):
-            print("A hit!")
-            gs.cpu_grid.mark_hit(attack_x, attack_y)
-            if gs.cpu_grid.check_if_ship_sinks(attack_x, attack_y):
-                sunk_ship = \
-                    gs.cpu_grid.get_cell(attack_x, attack_y).get_ship_here()
-                print("You sank a {}!".format(sunk_ship.name))
-            if not does_player_have_ships(gs.cpu_ships):
-                gs.winner_declared = True
-                return
-        else:  # attack missed
-            gs.cpu_grid.mark_miss(attack_x, attack_y)
-            print("You missed.")
-            display.redraw_board(gs.cpu_grid, gs.player_grid)
-            gs.cpu_turn = True
-            return
-
-
 def run_cpu_turn(gs):
+    message = None
     while True:  # return when attack misses
-        display.redraw_board(gs.cpu_grid, gs.player_grid)
+        display.redraw_board(gs.cpu_grid, gs.player_grid, message)
         # updates will appear on player grid
         attack_x, attack_y = cpu_select_attack_coordinates(gs.player_grid)
-        print("Enemy is attacking " + ROWS[attack_x] + str(attack_y) + "...")
+        player_io.msg("Enemy is attacking " +
+                      ROWS[attack_y] + str(attack_x) + "...")
         # small pause so play can see what is going on
         time.sleep(4)
         if gs.player_grid.check_if_attack_hits(attack_x, attack_y):
-            print("A hit!")
+            player_io.msg("A hit!")
             gs.player_grid.mark_hit(attack_x, attack_y)
             if gs.player_grid.check_if_ship_sinks(attack_x, attack_y):
                 sunk_ship = \
                     gs.cpu_grid.get_cell(attack_x, attack_y).get_ship_here()
-                print("Enemy sank your {}!".format(sunk_ship.name))
+                player_io.msg("Enemy sank your {}!".format(sunk_ship.name))
             if not does_player_have_ships(gs.player_ships):
                 gs.winner_declared = True
                 return
         else:  # attack missed
-            print("Enemy missed.")
+            player_io.msg("Enemy missed.")
             gs.player_grid.mark_miss(attack_x, attack_y)
             # redraw_board(cpu_grid, player_grid)
             gs.cpu_turn = False

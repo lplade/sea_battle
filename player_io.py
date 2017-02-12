@@ -116,4 +116,4 @@ def row_letter_to_y_coord_int(row_letter):
 
 
 def anykey():
-    input("- Press any key to continue. -")
+    input("- Press ENTER to continue. -")
