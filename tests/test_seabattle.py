@@ -10,7 +10,7 @@ import __init__
 
 def mock_redraw(enemy_grid, player_grid, last_msg=None):
     """
-    Reduced to only display "last_msg" string
+    Reduced to only display value of "message" string
     :param enemy_grid:
     :param player_grid:
     :param last_msg:
@@ -41,6 +41,8 @@ class SeaBattleTest(unittest.TestCase):
         with patch("player_io.get_input",
                    side_effect=input_list):
             game.player_place_ships(self.gs.player_ships)
+            # need to do one more "redraw"
+            display.redraw_board(self.gs.cpu_grid, self.gs.player_grid)
 
             # Get the args that were sent to player_io.msg()
             msg_calls = mock_msg.call_args_list
@@ -57,11 +59,8 @@ class SeaBattleTest(unittest.TestCase):
                 "Ship placed."
             ]
 
-            print(len(msg_calls))  # This only gets first 7 arguments
-            #                        Why? Expecting 8.
-
             # loop over these
-            for i in range(8):
+            for i in range(len(expected_out_strings)):
                 # note the second parameter must be a 1-tuple
                 self.assertEqual(msg_calls[i][0], (expected_out_strings[i],))
 

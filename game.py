@@ -43,6 +43,11 @@ def player_place_ships(ship_list):
             else:
                 message = "Invalid placement! Try again."
 
+    # refresh one more time before returning
+    display.redraw_board(enemy_grid=enemy_grid,
+                         player_grid=player_grid,
+                         last_msg=message)
+
     # return the populated grid
     return player_grid
 
