@@ -45,7 +45,8 @@ def interactive_get_placement_coord(ship):
         else:
             break
     while True:
-        hor_vert = get_input("Should ship run Horizontally, or Vertically? [H|V]? ")
+        hor_vert = get_input("Should ship run Horizontally, "
+                             "or Vertically? [H|V]? ")
         hor_vert = hor_vert.upper()
         if hor_vert == "H":
             horizontal = True
