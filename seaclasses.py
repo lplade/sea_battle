@@ -1,26 +1,10 @@
-#################
-# 'constants'   #
-#################
-
 import logging
-
-# We'll use this a bunch
-# name_of_ship: size_of_ship
-SHIP_DICT = {
-    'aircraft carrier': 5,
-    'battleship': 4,
-    'cruiser': 3,
-    'submarine': 3,
-    'destroyer': 2
-}
-
-# list of row labels
-ROWS = "ABCDEFGHIJ"
+from constants import *
 
 
 class GridCell:
     def __init__(self):
-        self.contains_ship_segment = False  # boolean whether or not a ship is here
+        self.contains_ship_segment = False  # whether or not a ship is here
         self.contains_ship = None  # Ship object
         self.has_miss_marker = False  # like the white peg
         self.has_hit_marker = False  # like the red peg
@@ -170,7 +154,8 @@ class Ship:
         # Initialize an array for keeping track of each spot that
         # can be damaged on a ship
         # offset 0 is upper left corner
-        self.damaged = [False] * self.size  # collection of bools for each segment of the ship
+        self.damaged = [False] * self.size  # list of bools for each
+        #                                     segment of the ship
 
     # TODO setters for grid position, orientation
 
@@ -178,21 +163,44 @@ class Ship:
         """
         figure out offset of selected coordinate
         from origin coordinate, toggle that bit in the list
+        :param x:
+        :param y:
+        :return: True if succeeds, False if error
         """
+        # We should always have determined this ship has a segment at these
+        # coordinates before calling this, so we should never encounter
+        # the warning or return False
+
         origin_x, origin_y = self.position
         if self.horizontal:
+            if y != origin_y:
+                logging.warning("Trying to damage coordinates"
+                                " outside of ship ({}, {})".format(x, y))
+                return False
             dam_offset = x - origin_x
         else:
+            if x != origin_x:
+                logging.warning("Trying to damage coordinates"
+                                " outside of ship ({}, {})".format(x, y))
+                return False
             dam_offset = y - origin_y
+
+        if dam_offset < 0 or dam_offset >= self.size:
+            logging.warning("Trying to damage coordinates"
+                            " outside of ship ({}, {})".format(x, y))
+            return False
+
         self.damaged[dam_offset] = True
+
+        return True
 
 
 # object that stores game state
 class Game:
     def __init__(self):
         # Give player and cpu their standard chips
-        self.player_ships = self.create_standard_ships()
-        self.cpu_ships = self.create_standard_ships()
+        self.player_ships = self.create_ships(SHIP_DICT)
+        self.cpu_ships = self.create_ships(SHIP_DICT)
 
         # Let main program populate these
         self.player_grid = None
@@ -202,14 +210,16 @@ class Game:
         self.cpu_turn = False
 
     @staticmethod
-    def create_standard_ships():
+    def create_ships(ship_dict):
         """
         Initializes the standard list of ships
+        :param ship_dict:
+        :return:
         :rtype: list of Ship
         """
         ships = []
         # loop through ship dictionary and create Ship objects
-        for key, value in SHIP_DICT.items():
+        for key, value in ship_dict.items():
             new_ship = Ship(key, value)
             ships.append(new_ship)
         return ships
