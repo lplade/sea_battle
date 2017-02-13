@@ -4,4 +4,4 @@ Sea Battle
 
 Based on a classic board game
 
-Game is still buggy
+Game is ~~still buggy~~ robust and supports unittest
