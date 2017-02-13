@@ -144,6 +144,7 @@ def cpu_place_ships(ship_list):
 
             # Use ShipGrid.place_ship logic to do the heavy lifting here
             if cpu_grid.place_ship(ship, x_attempt, y_attempt, horizontal):
+                logging.debug("Valid placement.")
                 player_io.msg("Enemy has deployed a ship...")
                 break
             else:

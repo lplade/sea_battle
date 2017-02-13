@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
+import logging
 import seaclasses
 import game
-import constants
 import player_io
 import display
 import __init__
@@ -41,8 +41,6 @@ class SeaBattleTest(unittest.TestCase):
         with patch("player_io.get_input",
                    side_effect=input_list):
             game.player_place_ships(self.gs.player_ships)
-            # need to do one more "redraw"
-            display.redraw_board(self.gs.cpu_grid, self.gs.player_grid)
 
             # Get the args that were sent to player_io.msg()
             msg_calls = mock_msg.call_args_list
@@ -61,22 +59,53 @@ class SeaBattleTest(unittest.TestCase):
 
             # loop over these
             for i in range(len(expected_out_strings)):
-                # note the second parameter must be a 1-tuple
+                # note the second parameter must be a tuple
                 self.assertEqual(msg_calls[i][0], (expected_out_strings[i],))
 
             print("Test end")
 
-    # def test_cpu_place_ships(self):
-    #     coord_list = [
-    #         [9, 9, False],  # this should error
-    #         [0, 0, True],
-    #         [0, 1, True],
-    #         [0, 2, True],
-    #         [0, 3, True],
-    #         [0, 0, False],
-    #         [0, 4, True]  # this should error
-    #     ]
-    #
-    #     with patch("cpu_logic.random_placement_coord",
-    #                side_effect=coord_list):
-    #         game.cpu_place_ships(self.gs.cpu_ships)
+    @patch("logging.debug")
+    def test_cpu_place_ships(self, mock_log):
+        print("Test cpu place ships...")
+
+        # TODO mock other print() and logging.info() to silence
+
+        # we are testing against debug outputs
+        logging.basicConfig(level=logging.DEBUG)
+
+        coord_list = [
+            [9, 9, False],  # this should error
+            [0, 0, True],
+            [0, 1, True],
+            [0, 2, True],
+            [0, 3, True],
+            [0, 0, False],
+            [0, 4, True],  # this should error
+        ]
+
+        with patch("cpu_logic.random_placement_coord",
+                   side_effect=coord_list):
+            game.cpu_place_ships(self.gs.cpu_ships)
+
+        # get the calls that were sent to logging.debug()
+        debug_calls = mock_log.call_args_list
+
+        # here are the expected .debug messages
+        debug_list = [
+            "Hit edge!",
+            "Invalid placement, re-trying...",
+            "Valid placement.",
+            "Valid placement.",
+            "Valid placement.",
+            "Valid placement.",
+            "Another ship is there!",
+            "Invalid placement, re-trying...",
+            "Valid placement."
+        ]
+
+        # loop over these
+        for i in range(len(debug_list)):
+            # second parameter must be a tuple to match calls
+            self.assertEqual(debug_calls[i][0], (debug_list[i],))
+
+        print("Test done.")
